@@ -13,7 +13,7 @@
         <compiler.plugin.version>3.5.1</compiler.plugin.version>
         <jar.plugin.version>2.6</jar.plugin.version>
         <dependency.plugin.version>2.10</dependency.plugin.version>
-        <java.verion>1.7</java.verion>
+        <java.version>1.7</java.version>
     </properties>
     <dependencies>
         <dependency>
@@ -67,8 +67,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${compiler.plugin.version}</version>
                 <configuration>
-                    <source>${java.verion}</source>
-                    <target>${java.verion}</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
             <plugin>
