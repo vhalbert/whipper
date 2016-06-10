@@ -169,17 +169,19 @@ public class BqtTool {
      */
     public void runTest(Properties props){
         resultMode = getResultMode(props);
-        resultMode.init(props);
-        String outputDir = props.getProperty(Keys.OUTPUT_DIR);
-        if(outputDir == null){
-            throw new IllegalArgumentException("Output directory is not set.");
-        }
         ScenarioIterator iter = new ScenarioIterator(props);
         while(iter.hasNext()){
             Scenario scen = iter.next();
             if(scen == null){
                 continue;
             }
+            Properties init = iter.getScenarioInitProperties();
+            String outputDir = init.getProperty(Keys.OUTPUT_DIR);
+            if(outputDir == null){
+                LOG.error("Cannot write result of the scenario {}. Output directory is not set. Skipping scenario.", scen.getId());
+                continue;
+            }
+            resultMode.init(init);
             if(scen.before()){
                 try{
                     scen.run();
@@ -192,8 +194,8 @@ public class BqtTool {
             } else {
                 LOG.warn("Skipping scenario {}.", scen.getId());
             }
+            resultMode.destroy();
         }
-        resultMode.destroy();
     }
 
     /**
@@ -285,6 +287,7 @@ public class BqtTool {
         private final File[] scenarios;
         private final File artefactsDir;
         private final Properties original = new Properties();
+        private final Properties initProps = new Properties();
         private int idx = 0;
 
         private ScenarioIterator(final Properties props) {
@@ -376,6 +379,8 @@ public class BqtTool {
                 LOG.debug("Resolved properties: {}.", props);
                 Scenario scen = new Scenario(removeExtension(scenFile.getName()));
                 scen.init(props);
+                initProps.clear();
+                initProps.putAll(props);
                 File testQueries = new File(artefactsDir,
                         props.getProperty(Keys.QUERYSET_DIR)+ File.separator + props.getProperty(Keys.TEST_QUERIES_DIR));
                 File[] suites = testQueries.listFiles(new FilenameFilter() {
@@ -395,6 +400,7 @@ public class BqtTool {
                 return scen;
             } catch (Exception ex){
                 LOG.error("Unable to create scenario from file " + scenFile, ex);
+                initProps.clear();
                 return null;
             }
         }
@@ -402,6 +408,10 @@ public class BqtTool {
         @Override
         public void remove() {
             throw new UnsupportedOperationException("Not supported");
+        }
+
+        private Properties getScenarioInitProperties(){
+            return initProps;
         }
     }
 
